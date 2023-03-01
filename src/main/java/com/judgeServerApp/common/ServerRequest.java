@@ -22,7 +22,7 @@ public class ServerRequest {
     private String runCmd;
 
     /** 时间限制 */
-    private String timeLimit;
+    private Integer timeLimit;
 
     /** 内存限制 */
     private String memoryLimit;
