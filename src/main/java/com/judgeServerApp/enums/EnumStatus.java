@@ -3,34 +3,23 @@ package com.judgeServerApp.enums;
 /**
  * @author yang
  */
-
 public enum EnumStatus {
-    /** 编译失败 */
-    COMPILE_FAIL,
+    /** 请求格式不正确 */
+    FORMAT_ERROR,
 
-    /** 编译成功 */
-    COMPILE_SUCCESS,
+    /** 代码运行异常 */
+    RUN_ERROR,
 
-    /** 运行成功 */
-    RUN_SUCCESS,
-
-    /** 运行失败 */
-    RUN_FAIL,
-
-    /** 代码通过全部测试点 */
+    /** 代码通过所有测试点 */
     ACCEPT,
-
-    /** 代码全不通过测试点 */
-    WRONG_ANSWER,
 
     /** 代码通过部分测试点 */
     PARTIALLY_ACCEPT,
 
-    /** 运行超出时间限制 */
-    TIME_LIMIT_EXCEEDED,
+    /** 测试点全错 */
+    ALL_WRONG,
 
-    /** 运行超出内存限制 */
-    MEMORY_LIMIT_EXCEEDED,
-
+    /** 服务超时 */
+    TIME_ERROR,
 
 }
