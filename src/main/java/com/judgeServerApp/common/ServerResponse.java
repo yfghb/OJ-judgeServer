@@ -9,6 +9,9 @@ import lombok.Data;
  */
 @Data
 public class ServerResponse {
+    /** 与 ServerRequest.uuid 对应 */
+    private String uuid;
+
     /** 运行结果的状态 */
     private Integer status;
 

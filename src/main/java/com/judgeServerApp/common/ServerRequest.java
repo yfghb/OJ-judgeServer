@@ -9,6 +9,12 @@ import java.util.List;
  */
 @Data
 public class ServerRequest {
+    /** 唯一uuid */
+    private String uuid;
+
+    /** 运行环境 */
+    private String systemEnv;
+
     /** 代码的语言 */
     private String language;
 

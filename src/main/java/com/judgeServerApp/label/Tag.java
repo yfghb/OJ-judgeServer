@@ -15,7 +15,7 @@ public class Tag {
     public static final Integer WRONG_ANSWER = -300;
 
     /** 测试点正确 */
-    public static final Integer PASSED = 200;
+    public static final Integer PASSED = 20;
 
     /** 测试点运行超出时间限制 */
     public static final Integer TIME_LIMIT_EXCEEDED = -400;

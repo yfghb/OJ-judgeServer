@@ -23,5 +23,8 @@ public class Status {
     /** 服务超时 */
     public static final Integer TIME_ERROR = -999;
 
+    /** 请求状态正常 */
+    public static final Integer OK = 200;
+
     private Status(){}
 }
