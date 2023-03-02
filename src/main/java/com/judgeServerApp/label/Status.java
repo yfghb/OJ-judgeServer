@@ -26,5 +26,8 @@ public class Status {
     /** 请求状态正常 */
     public static final Integer OK = 200;
 
+    /** 服务器出错 */
+    public static final Integer SYSTEM_ERROR = 500;
+
     private Status(){}
 }

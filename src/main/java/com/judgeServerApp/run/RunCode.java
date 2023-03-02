@@ -1,8 +1,9 @@
 package com.judgeServerApp.run;
 
 import com.judgeServerApp.common.ServerRequest;
-import com.judgeServerApp.common.ServerResponse;
+import com.judgeServerApp.common.TestCase;
 import com.judgeServerApp.label.Tag;
+import lombok.Data;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -12,23 +13,31 @@ import java.io.OutputStreamWriter;
 /**
  * @author yang
  */
+@Data
 public class RunCode {
     private final String compileCmd;
     private final String RunCmd;
     private final Integer timeLimit;
     private final String input;
+    private final String output;
     private static final long ONE_SECOND = 1000;
-    private final ServerResponse response;
+    private final TestCase response;
 
-    RunCode(ServerRequest request,ServerResponse response,Integer index){
+    public RunCode(ServerRequest request, TestCase testCase, Integer index){
         this.compileCmd = request.getCompileCmd();
         this.RunCmd = request.getRunCmd();
         this.timeLimit = request.getTimeLimit();
         this.input = request.getInputList().get(index);
-        this.response = response;
+        this.output = request.getOutputList().get(index);
+        this.response = testCase;
+        testCase.setUuid(request.getUuid());
     }
 
     public void compile(){
+        /* 如果这个语言不用编译 */
+        if(this.compileCmd==null){
+            return;
+        }
         try{
             Process compile = Runtime.getRuntime().exec(this.compileCmd);
             compile.waitFor();
@@ -60,6 +69,7 @@ public class RunCode {
         StringBuilder result = new StringBuilder();
         try{
             this.response.setInput(this.input);
+            this.response.setOutput(this.output);
             Process process = Runtime.getRuntime().exec(this.RunCmd);
 
             //输入到用户代码里（样例输入）
@@ -112,6 +122,12 @@ public class RunCode {
             reader.close();
             process.destroy();
             this.response.setAnswer(result.toString());
+            // 判断答案是否正确
+            if(result.toString().equals(this.output)){
+                this.response.setTag(Tag.PASSED);
+            }else{
+                this.response.setTag(Tag.WRONG_ANSWER);
+            }
         }catch (Exception e){
             this.response.setTag(Tag.RUN_FAIL);
             if(this.response.getErrorMsg()==null){

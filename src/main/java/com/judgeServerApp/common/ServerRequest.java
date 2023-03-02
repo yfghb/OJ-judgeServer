@@ -27,6 +27,9 @@ public class ServerRequest {
     /** 运行命令 */
     private String runCmd;
 
+    /** 文件后缀名 */
+    private String fileSuffix;
+
     /** 时间限制 */
     private Integer timeLimit;
 
@@ -35,9 +38,6 @@ public class ServerRequest {
 
     /** 是否要读取输入输出文件 */
     private Boolean isReadFile;
-
-    /** 测试点数量 */
-    private Integer pointCnt;
 
     /** 输入测试点 */
     private List<String> inputList;

@@ -1,10 +1,18 @@
 package com.judgeServerApp.controller;
 
-import com.judgeServerApp.cmd.JavaCmd;
+
+import com.alibaba.fastjson.JSON;
+import com.judgeServerApp.common.InPoints;
+import com.judgeServerApp.common.OutPoints;
 import com.judgeServerApp.common.ServerRequest;
+import com.judgeServerApp.common.TestCase;
 import com.judgeServerApp.label.Status;
 import com.judgeServerApp.label.SystemEnv;
-import java.util.UUID;
+import org.apache.tomcat.util.http.fileupload.FileUploadException;
+
+import java.io.*;
+import java.util.Objects;
+
 
 /**
  * @author yang
@@ -19,7 +27,7 @@ public class Utils {
             request.getCode()==null ||
             request.getIsReadFile()==null ||
             request.getTimeLimit()==null ||
-            request.getPointCnt()==null ||
+            request.getFileSuffix()==null ||
             request.getMemoryLimit()==null){
             return Status.FORMAT_ERROR;
         }
@@ -44,45 +52,60 @@ public class Utils {
         return Status.OK;
     }
 
-    public static String setAttribute(ServerRequest request,String filename){
-        String uuid = UUID.randomUUID().toString();
-        String env = request.getSystemEnv();
-        request.setUuid(uuid);
-        if(env!=null){
-            if(env.equals(SystemEnv.WINDOWS)){
-                switch (request.getLanguage()){
-                    case "java":
-                        request.setCompileCmd(JavaCmd.windowsCompile(filename));
-                        request.setRunCmd(JavaCmd.windowsRunning(filename));
-                        break;
-                    case "c":
-                        System.out.println("c");
-                        break;
-                    case "python":
-                        break;
-                    default:
-                        throw new IllegalStateException("Unexpected value: " + request.getLanguage());
-                }
-            }else if(env.equals(SystemEnv.LINUX)){
-                switch (request.getLanguage()){
-                    case "java":
-                        request.setCompileCmd(JavaCmd.linuxCompile(filename));
-                        request.setRunCmd(JavaCmd.linuxRunning(filename));
-                        break;
-                    case "c":
-                        System.out.println("c");
-                        break;
-                    case "python":
-                        break;
-                    default:
-                        throw new IllegalStateException("Unexpected value: " + request.getLanguage());
-                }
-            }
-        }
-        return uuid;
+    public static void setCmd(ServerRequest request, String file){
+
     }
 
-    public static String writeInFile(ServerRequest request){
-        return null;
+    public static String fileReady(ServerRequest request) throws IOException {
+        String filename = request.getUuid();
+        String suffix = request.getFileSuffix();
+        String code = request.getCode();
+        String java = "java";
+        if(Objects.equals(request.getLanguage(), java)){
+            code = code.replaceAll("public class [a-zA-Z]+","public class "+filename);
+        }
+        String file = filename + suffix;
+        String path = Objects.equals(request.getSystemEnv(), SystemEnv.WINDOWS)? SystemEnv.WINDOWS : SystemEnv.LINUX;
+        File fp = new File(path + file);
+        if(!fp.exists()){
+            if(fp.createNewFile()){
+                FileWriter writer = new FileWriter(path+file);
+                // 清空原文件的内容
+                writer.write("");
+                // 将代码写入文件
+                writer.write(code);
+                writer.flush();
+                writer.close();
+            }else{
+                throw new FileUploadException();
+            }
+        }
+
+        return file;
+    }
+
+    public static void inOutReady(ServerRequest request){
+        String inputPath = request.getInputFilePath();
+        String outputPath = request.getOutputFilePath();
+        StringBuilder input = new StringBuilder();
+        StringBuilder output = new StringBuilder();
+        try{
+            FileInputStream readInput = new FileInputStream(inputPath);
+            FileInputStream readOutput = new FileInputStream(outputPath);
+            byte[] bytes = new byte[1024];
+            int len = 0;
+            while ((len = readInput.read(bytes)) != -1){
+                input.append(new String(bytes,0,len));
+            }
+            while ((len = readOutput.read(bytes)) != -1){
+                output.append(new String(bytes,0,len));
+            }
+            InPoints inPoints = JSON.parseObject(input.toString(),InPoints.class);
+            OutPoints outPoints = JSON.parseObject(output.toString(),OutPoints.class);
+            request.setInputList(inPoints.getInput());
+            request.setOutputList(outPoints.getOutput());
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 }
