@@ -5,8 +5,6 @@ package com.judgeServerApp.label;
  * @author yang
  */
 public class Status {
-    /** 代码运行异常 */
-    public static final Integer RUN_ERROR = -1;
 
     /** 请求格式不正确 */
     public static final Integer FORMAT_ERROR = -2;

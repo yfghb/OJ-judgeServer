@@ -21,7 +21,7 @@ public class Tag {
     public static final Integer TIME_LIMIT_EXCEEDED = -400;
 
     /** 测试点运行超出内存限制 */
-    public static final Integer MEMORY_LIMIT_EXCEEDED = -500;
+    //public static final Integer MEMORY_LIMIT_EXCEEDED = -500;
 
     private Tag(){}
 }

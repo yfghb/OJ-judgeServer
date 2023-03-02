@@ -21,7 +21,7 @@ public class RunCode {
     private final String input;
     private final String output;
     private static final long ONE_SECOND = 1000;
-    private final TestCase response;
+    private final TestCase testCase;
 
     public RunCode(ServerRequest request, TestCase testCase, Integer index){
         this.compileCmd = request.getCompileCmd();
@@ -29,7 +29,7 @@ public class RunCode {
         this.timeLimit = request.getTimeLimit();
         this.input = request.getInputList().get(index);
         this.output = request.getOutputList().get(index);
-        this.response = testCase;
+        this.testCase = testCase;
         testCase.setUuid(request.getUuid());
     }
 
@@ -53,23 +53,25 @@ public class RunCode {
             }
             if(flag==1){
                 compile.destroy();
-                this.response.setCompileMsg(failMessage.toString());
+                this.testCase.setTag(Tag.COMPILE_FAIL);
+                this.testCase.setCompileMsg(failMessage.toString());
                 return;
             }
             compile.destroy();
         }catch (Exception e){
-            this.response.setCompileMsg("compile error");
-            this.response.setErrorMsg(e.getMessage());
+            this.testCase.setTag(Tag.COMPILE_FAIL);
+            this.testCase.setCompileMsg("compile error");
+            this.testCase.setErrorMsg(e.getMessage());
             return;
         }
-        this.response.setCompileMsg("compile accept");
+        this.testCase.setCompileMsg("compile accept");
     }
 
     public void running(){
         StringBuilder result = new StringBuilder();
         try{
-            this.response.setInput(this.input);
-            this.response.setOutput(this.output);
+            this.testCase.setInput(this.input);
+            this.testCase.setOutput(this.output);
             Process process = Runtime.getRuntime().exec(this.RunCmd);
 
             //输入到用户代码里（样例输入）
@@ -93,9 +95,9 @@ public class RunCode {
 
             if (flag==1) {
                 process.destroy();
-                if(this.response.getErrorMsg()==null){
-                    this.response.setTag(Tag.RUN_FAIL);
-                    this.response.setErrorMsg(errorMessage.toString());
+                if(this.testCase.getErrorMsg()==null){
+                    this.testCase.setTag(Tag.RUN_FAIL);
+                    this.testCase.setErrorMsg(errorMessage.toString());
                     return;
                 }
             }
@@ -104,10 +106,10 @@ public class RunCode {
             process.waitFor();
             long endTime = System.currentTimeMillis();
             long calcTime = endTime - startTime;
-            this.response.setTime(calcTime + "ms");
+            this.testCase.setTime(calcTime + "ms");
             if(calcTime > this.timeLimit * ONE_SECOND){
                 process.destroy();
-                this.response.setTag(Tag.TIME_LIMIT_EXCEEDED);
+                this.testCase.setTag(Tag.TIME_LIMIT_EXCEEDED);
                 return;
             }
 
@@ -121,17 +123,17 @@ public class RunCode {
             result.delete(result.length()-1,result.length());
             reader.close();
             process.destroy();
-            this.response.setAnswer(result.toString());
+            this.testCase.setAnswer(result.toString());
             // 判断答案是否正确
             if(result.toString().equals(this.output)){
-                this.response.setTag(Tag.PASSED);
+                this.testCase.setTag(Tag.PASSED);
             }else{
-                this.response.setTag(Tag.WRONG_ANSWER);
+                this.testCase.setTag(Tag.WRONG_ANSWER);
             }
         }catch (Exception e){
-            this.response.setTag(Tag.RUN_FAIL);
-            if(this.response.getErrorMsg()==null){
-                this.response.setErrorMsg(e.getMessage());
+            this.testCase.setTag(Tag.RUN_FAIL);
+            if(this.testCase.getErrorMsg()==null){
+                this.testCase.setErrorMsg(e.getMessage());
             }
         }
 

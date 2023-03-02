@@ -2,12 +2,11 @@ package com.judgeServerApp.controller;
 
 
 import com.alibaba.fastjson.JSON;
-import com.judgeServerApp.common.InPoints;
-import com.judgeServerApp.common.OutPoints;
-import com.judgeServerApp.common.ServerRequest;
-import com.judgeServerApp.common.TestCase;
+import com.judgeServerApp.cmd.JavaCmd;
+import com.judgeServerApp.common.*;
 import com.judgeServerApp.label.Status;
 import com.judgeServerApp.label.SystemEnv;
+import com.judgeServerApp.label.Tag;
 import org.apache.tomcat.util.http.fileupload.FileUploadException;
 
 import java.io.*;
@@ -52,11 +51,29 @@ public class Utils {
         return Status.OK;
     }
 
-    public static void setCmd(ServerRequest request, String file){
-
+    public static void setCmd(ServerRequest request){
+        String filename = request.getUuid();
+        switch (request.getLanguage()){
+            case "java":
+                if(Objects.equals(request.getSystemEnv(), SystemEnv.WINDOWS)){
+                    request.setCompileCmd(JavaCmd.windowsCompile(filename));
+                    request.setRunCmd(JavaCmd.windowsRunning(filename));
+                }else{
+                    request.setCompileCmd(JavaCmd.linuxCompile(filename));
+                    request.setRunCmd(JavaCmd.linuxRunning(filename));
+                }
+                break;
+            case "c":
+                System.out.println("c");
+                break;
+            case "python":
+                break;
+            default:
+                throw new IllegalStateException("Unexpected value: " + request.getLanguage());
+        }
     }
 
-    public static String fileReady(ServerRequest request) throws IOException {
+    public static void fileReady(ServerRequest request) throws IOException {
         String filename = request.getUuid();
         String suffix = request.getFileSuffix();
         String code = request.getCode();
@@ -80,8 +97,6 @@ public class Utils {
                 throw new FileUploadException();
             }
         }
-
-        return file;
     }
 
     public static void inOutReady(ServerRequest request){
@@ -93,7 +108,7 @@ public class Utils {
             FileInputStream readInput = new FileInputStream(inputPath);
             FileInputStream readOutput = new FileInputStream(outputPath);
             byte[] bytes = new byte[1024];
-            int len = 0;
+            int len;
             while ((len = readInput.read(bytes)) != -1){
                 input.append(new String(bytes,0,len));
             }
@@ -106,6 +121,32 @@ public class Utils {
             request.setOutputList(outPoints.getOutput());
         }catch (Exception e){
             e.printStackTrace();
+        }
+    }
+
+    public static void checkResult(ServerResponse response,Integer cnt){
+        if(response.getCaseList().size() != cnt){
+            response.setStatus(Status.SYSTEM_ERROR);
+        }else{
+            int ac=0;
+            int tle=0;
+            for(TestCase testCase: response.getCaseList()){
+                Integer tag = testCase.getTag();
+                if(Objects.equals(tag, Tag.PASSED)){
+                    ac++;
+                }else if(Objects.equals(tag, Tag.TIME_LIMIT_EXCEEDED)){
+                    tle++;
+                }
+            }
+            if(ac==cnt){
+                response.setStatus(Status.ACCEPT);
+            }else if(tle==cnt){
+                response.setStatus(Status.TIME_ERROR);
+            }else if(ac==0){
+                response.setStatus(Status.ALL_WRONG);
+            }else{
+                response.setStatus(Status.PARTIALLY_ACCEPT);
+            }
         }
     }
 }

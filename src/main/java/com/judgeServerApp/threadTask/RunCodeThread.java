@@ -27,6 +27,6 @@ public class RunCodeThread implements Callable<TestCase> {
     public TestCase call() {
         runCode.compile();
         runCode.running();
-        return runCode.getResponse();
+        return runCode.getTestCase();
     }
 }
