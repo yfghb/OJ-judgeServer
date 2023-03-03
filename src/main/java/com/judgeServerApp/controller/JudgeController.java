@@ -1,12 +1,13 @@
 package com.judgeServerApp.controller;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.judgeServerApp.common.ServerRequest;
 import com.judgeServerApp.common.ServerResponse;
 import com.judgeServerApp.common.TestCase;
 import com.judgeServerApp.label.Status;
 import com.judgeServerApp.label.ThreadPoolParam;
+import com.judgeServerApp.run.RunCode;
 import com.judgeServerApp.threadTask.RunCodeThread;
 import com.judgeServerApp.threadTask.ThreadFactory;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -40,19 +41,19 @@ public class JudgeController {
     );
 
     @PostMapping("/run")
-    public JSONArray run(@RequestBody ServerRequest request){
-        JSONArray jsonArray;
+    public JSONObject run(@RequestBody ServerRequest request){
+        JSONObject jsonObject;
         List<TestCase> caseList = new ArrayList<>();
         List<RunCodeThread> threadList = new ArrayList<>();
         ServerResponse res = new ServerResponse();
-        String uuid = UUID.randomUUID().toString();
+        String uuid = ("Judge"+ UUID.randomUUID()).replace('-','_');
         request.setUuid(uuid);
         // 检查请求的数据格式是否正确
         if(Objects.equals(checkRequest(request), Status.FORMAT_ERROR)){
             res.setStatus(Status.FORMAT_ERROR);
             String str = JSON.toJSONString(res);
-            jsonArray = JSON.parseArray(str);
-            return jsonArray;
+            jsonObject = JSON.parseObject(str);
+            return jsonObject;
         }
         try {
             // 将代码写入文件
@@ -63,13 +64,18 @@ public class JudgeController {
             }
             // 设置编译/运行的命令
             setCmd(request);
+            // 只编译一次
+            RunCode onlyOne = new RunCode(request,new TestCase(),0);
+            onlyOne.compile();
+            String compileMsg = onlyOne.getTestCase().getCompileMsg();
             // 提交所有线程的任务，加速判题
             for(int i=0;i<request.getInputList().size();i++){
                 TestCase testCase = new TestCase();
+                testCase.setCompileMsg(compileMsg);
                 RunCodeThread thread = new RunCodeThread(request, testCase,i);
                 threadList.add(thread);
             }
-            List<Future<TestCase>> futures = THREAD_POOL.invokeAll(threadList, request.getTimeLimit()+1, TimeUnit.SECONDS);
+            List<Future<TestCase>> futures = THREAD_POOL.invokeAll(threadList);
             // 收集结果
             for(Future<TestCase> future:futures){
                 caseList.add(future.get());
@@ -82,8 +88,8 @@ public class JudgeController {
             e.printStackTrace();
         }finally {
             String str = JSON.toJSONString(res);
-            jsonArray = JSON.parseArray(str);
+            jsonObject = JSON.parseObject(str);
         }
-        return jsonArray;
+        return jsonObject;
     }
 }

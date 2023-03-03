@@ -36,6 +36,7 @@ public class RunCode {
     public void compile(){
         /* 如果这个语言不用编译 */
         if(this.compileCmd==null){
+            this.testCase.setCompileMsg("No need to compile");
             return;
         }
         try{

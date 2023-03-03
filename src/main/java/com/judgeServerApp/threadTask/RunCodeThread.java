@@ -4,6 +4,7 @@ import com.judgeServerApp.common.ServerRequest;
 import com.judgeServerApp.common.TestCase;
 import com.judgeServerApp.run.RunCode;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.Callable;
 
@@ -11,6 +12,7 @@ import java.util.concurrent.Callable;
  * @author yang
  */
 @Data
+@Slf4j
 public class RunCodeThread implements Callable<TestCase> {
     private final RunCode runCode;
     /**
@@ -25,8 +27,10 @@ public class RunCodeThread implements Callable<TestCase> {
 
     @Override
     public TestCase call() {
-        runCode.compile();
         runCode.running();
+        log.info(runCode.getTestCase().getUuid()+"运行完毕");
         return runCode.getTestCase();
     }
+
+
 }

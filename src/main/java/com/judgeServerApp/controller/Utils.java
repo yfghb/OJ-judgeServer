@@ -2,11 +2,14 @@ package com.judgeServerApp.controller;
 
 
 import com.alibaba.fastjson.JSON;
+import com.judgeServerApp.cmd.DirPath;
 import com.judgeServerApp.cmd.JavaCmd;
 import com.judgeServerApp.common.*;
 import com.judgeServerApp.label.Status;
 import com.judgeServerApp.label.SystemEnv;
 import com.judgeServerApp.label.Tag;
+import com.judgeServerApp.run.RunCode;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.http.fileupload.FileUploadException;
 
 import java.io.*;
@@ -16,6 +19,7 @@ import java.util.Objects;
 /**
  * @author yang
  */
+@Slf4j
 public class Utils {
     public static Integer checkRequest(ServerRequest request){
         if(request==null){
@@ -82,7 +86,7 @@ public class Utils {
             code = code.replaceAll("public class [a-zA-Z]+","public class "+filename);
         }
         String file = filename + suffix;
-        String path = Objects.equals(request.getSystemEnv(), SystemEnv.WINDOWS)? SystemEnv.WINDOWS : SystemEnv.LINUX;
+        String path = Objects.equals(request.getSystemEnv(), SystemEnv.WINDOWS)? DirPath.WINDOWS_PATH : DirPath.LINUX_PATH;
         File fp = new File(path + file);
         if(!fp.exists()){
             if(fp.createNewFile()){
@@ -94,6 +98,7 @@ public class Utils {
                 writer.flush();
                 writer.close();
             }else{
+                log.error("代码写入文件失败！");
                 throw new FileUploadException();
             }
         }
