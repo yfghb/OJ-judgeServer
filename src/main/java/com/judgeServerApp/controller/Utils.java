@@ -8,7 +8,6 @@ import com.judgeServerApp.common.*;
 import com.judgeServerApp.label.Status;
 import com.judgeServerApp.label.SystemEnv;
 import com.judgeServerApp.label.Tag;
-import com.judgeServerApp.run.RunCode;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.http.fileupload.FileUploadException;
 
@@ -152,6 +151,37 @@ public class Utils {
             }else{
                 response.setStatus(Status.PARTIALLY_ACCEPT);
             }
+        }
+    }
+
+    public static void delFile(ServerRequest request){
+        String filename = request.getUuid();
+        String path = Objects.equals(request.getSystemEnv(), SystemEnv.WINDOWS)? DirPath.WINDOWS_PATH : DirPath.LINUX_PATH;
+        switch (request.getLanguage()){
+            case "java":
+                del(path + filename + ".class");
+                del(path + filename + ".java");
+                break;
+            case "c":
+                del(path + filename + ".c");
+                del(path + filename + ".exe");
+                break;
+            case "c++":
+                del(path + filename + ".cpp");
+                del(path + filename + ".exe");
+                break;
+            case "python":
+                del(path + filename + ".py");
+                break;
+            default:
+                throw new IllegalStateException("Unexpected value: " + request.getLanguage());
+        }
+    }
+
+    private static void del(String file){
+        File delFile = new File(file);
+        if(!delFile.delete()){
+            log.warn(file+"删除异常！");
         }
     }
 }

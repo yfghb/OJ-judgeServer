@@ -90,6 +90,7 @@ public class JudgeController {
             String str = JSON.toJSONString(res);
             jsonObject = JSON.parseObject(str);
         }
+        delFile(request);
         return jsonObject;
     }
 }
