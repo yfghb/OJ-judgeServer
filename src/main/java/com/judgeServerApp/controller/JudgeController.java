@@ -10,10 +10,7 @@ import com.judgeServerApp.label.ThreadPoolParam;
 import com.judgeServerApp.run.RunCode;
 import com.judgeServerApp.threadTask.RunCodeThread;
 import com.judgeServerApp.threadTask.ThreadFactory;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +36,11 @@ public class JudgeController {
             new ArrayBlockingQueue<>(20),
             new ThreadFactory()
     );
+
+    @GetMapping("/hello")
+    public String hello(){
+        return "你好！我是judgeServer";
+    }
 
     @PostMapping("/run")
     public JSONObject run(@RequestBody ServerRequest request){

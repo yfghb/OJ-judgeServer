@@ -18,7 +18,7 @@ public class Status {
     /** 测试点全错 */
     public static final Integer ALL_WRONG = 1;
 
-    /** 服务超时 */
+    /** 超时 */
     public static final Integer TIME_ERROR = -999;
 
     /** 请求状态正常 */

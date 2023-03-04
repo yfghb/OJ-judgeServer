@@ -22,10 +22,10 @@ public class ServerRequest {
     private String code;
 
     /** 编译命令 */
-    private String compileCmd;
+    private String[] compileCmd;
 
     /** 运行命令 */
-    private String runCmd;
+    private String[] runCmd;
 
     /** 文件后缀名 */
     private String fileSuffix;

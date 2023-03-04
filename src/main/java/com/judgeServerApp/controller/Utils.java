@@ -2,8 +2,10 @@ package com.judgeServerApp.controller;
 
 
 import com.alibaba.fastjson.JSON;
+import com.judgeServerApp.cmd.CppCmd;
 import com.judgeServerApp.cmd.DirPath;
 import com.judgeServerApp.cmd.JavaCmd;
+import com.judgeServerApp.cmd.PythonCmd;
 import com.judgeServerApp.common.*;
 import com.judgeServerApp.label.Status;
 import com.judgeServerApp.label.SystemEnv;
@@ -50,7 +52,6 @@ public class Utils {
             }
         }
 
-
         return Status.OK;
     }
 
@@ -67,9 +68,30 @@ public class Utils {
                 }
                 break;
             case "c":
-                System.out.println("c");
+                if(Objects.equals(request.getSystemEnv(), SystemEnv.WINDOWS)){
+                    request.setCompileCmd(CppCmd.windowsCompileC(filename));
+                    request.setRunCmd(CppCmd.windowsRunning(filename));
+                }else{
+                    request.setCompileCmd(CppCmd.linuxCompileC(filename));
+                    request.setRunCmd(CppCmd.linuxRunning(filename));
+                }
+                break;
+            case "c++":
+                if(Objects.equals(request.getSystemEnv(), SystemEnv.WINDOWS)){
+                    request.setCompileCmd(CppCmd.windowsCompileCpp(filename));
+                    request.setRunCmd(CppCmd.windowsRunning(filename));
+                }else{
+                    request.setCompileCmd(CppCmd.linuxCompileCpp(filename));
+                    request.setRunCmd(CppCmd.linuxRunning(filename));
+                }
                 break;
             case "python":
+                request.setCompileCmd(null);
+                if(Objects.equals(request.getSystemEnv(), SystemEnv.WINDOWS)){
+                    request.setRunCmd(PythonCmd.windowsRunning(filename));
+                }else {
+                    request.setRunCmd(PythonCmd.linuxRunning(filename));
+                }
                 break;
             default:
                 throw new IllegalStateException("Unexpected value: " + request.getLanguage());
@@ -156,7 +178,8 @@ public class Utils {
 
     public static void delFile(ServerRequest request){
         String filename = request.getUuid();
-        String path = Objects.equals(request.getSystemEnv(), SystemEnv.WINDOWS)? DirPath.WINDOWS_PATH : DirPath.LINUX_PATH;
+        String env = request.getSystemEnv();
+        String path = Objects.equals(env, SystemEnv.WINDOWS)? DirPath.WINDOWS_PATH : DirPath.LINUX_PATH;
         switch (request.getLanguage()){
             case "java":
                 del(path + filename + ".class");
@@ -164,11 +187,19 @@ public class Utils {
                 break;
             case "c":
                 del(path + filename + ".c");
-                del(path + filename + ".exe");
+                if(Objects.equals(env, SystemEnv.WINDOWS)){
+                    del(path + filename + ".exe");
+                }else{
+                    del(path + filename + ".out");
+                }
                 break;
             case "c++":
                 del(path + filename + ".cpp");
-                del(path + filename + ".exe");
+                if(Objects.equals(env, SystemEnv.WINDOWS)){
+                    del(path + filename + ".exe");
+                }else{
+                    del(path + filename + ".out");
+                }
                 break;
             case "python":
                 del(path + filename + ".py");

@@ -15,8 +15,8 @@ import java.io.OutputStreamWriter;
  */
 @Data
 public class RunCode {
-    private final String compileCmd;
-    private final String RunCmd;
+    private final String[] compileCmd;
+    private final String[] RunCmd;
     private final Integer timeLimit;
     private final String input;
     private final String output;
@@ -44,7 +44,7 @@ public class RunCode {
             compile.waitFor();
 
             //获得编译的错误信息
-            BufferedReader failReader = new BufferedReader(new InputStreamReader(compile.getErrorStream(), "gbk"));
+            BufferedReader failReader = new BufferedReader(new InputStreamReader(compile.getErrorStream(),"gbk"));
             int flag = 0;
             String line;
             StringBuilder failMessage = new StringBuilder();
@@ -114,7 +114,7 @@ public class RunCode {
                 return;
             }
 
-            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(),"gbk"));
             String line;
             //获得执行结果，即执行文件System.out的内容
             while ((line = reader.readLine()) != null) {
